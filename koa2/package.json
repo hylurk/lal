@@ -1,0 +1,17 @@
+{
+  "name": "koa2",
+  "version": "1.0.0",
+  "description": "手撸 Koa2 源码",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "https://github.com/hylurk",
+  "license": "MIT",
+  "dependencies": {
+    "depd": "^2.0.0",
+    "is-generator-function": "^1.0.8",
+    "koa": "^2.13.0",
+    "koa-convert": "^2.0.0"
+  }
+}
