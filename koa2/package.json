@@ -9,9 +9,11 @@
   "author": "https://github.com/hylurk",
   "license": "MIT",
   "dependencies": {
+    "debug": "^4.3.1",
     "depd": "^2.0.0",
     "is-generator-function": "^1.0.8",
     "koa": "^2.13.0",
+    "koa-compose": "^4.1.0",
     "koa-convert": "^2.0.0"
   }
 }
