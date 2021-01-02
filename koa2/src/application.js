@@ -70,12 +70,43 @@ module.exports = class Application extends Emitter {
     // 回调函数里，会被自动塞入两个参数，一个是 req 请求信息，一个是 res 响应信息
     const handleRequest = (req, res) => {
       // 调用自己的函数，封装出来一个上下文 ctx
-      // TODO
+      // 此处是 koa 的精华，将 http 的 req 和 res 都代理到了自己的 ctx 上
       const ctx = this.createContent(req, res)
       // TODO >>>
       return this.handleRequest(ctx, fn)
     }
     return handleRequest
+  }
+  // 处理请求
+  handleRequest(ctx, fnMiddleware) {
+    // 注意，这个时候，ctx 已经完成了各种挂载
+    const res = ctx.res
+    
+  }
+  // 创建 koa 独特的上下文
+  createContent (req, res) {
+    // 为什么要用 Object.create 包一层，主要目的就是为了防止用户修改 koa 自己对象上的一些属性
+    // 同时为了用户无论在哪都能拿到原生的 req、res 和自己的 request、response，进行了多个的挂载
+    // 主要，全写的都是 koa 封装的：ctx、context、resquest、response，原生的都是缩写：req、res
+    const context = Object.create(this.context)
+    const request = context.request = Object.create(this.request)
+    const response = context.response = Object.create(this.response)
+    // 无论在 context 还是 request 和 response 上，都能拿到当前实例
+    context.app = request.app = response.app = this
+    // req 是原生的
+    context.req = request.req = response.req = req
+    // res 是原生的
+    context.res = request.res = response.res = res
+    // 又在自己的 request 和 response 存放了自己的 context
+    request.ctx = response.ctx = context
+    // request 和 response 也可以相互拿对方
+    request.response = response
+    response.request = request
+    // 又在 context 和 request 存放了原生的 url
+    context.originalUrl = request.originalUrl = req.url
+    // 又挂载了一个 state 属性
+    context.state = {}
+    return context
   }
   // 监听指定端口
   listen (...args) {
