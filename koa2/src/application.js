@@ -10,6 +10,10 @@ const isGeneratorFunction = require('is-generator-function')
 // 源码地址：https://github.com/visionmedia/debug
 const debug = require('debug')('koa:application')
 
+// 该库主要创建一个侦听器，用来侦听响应结束后的状态，如果报错，则会把错误放在第一个参数，该侦听回调函数只会被执行一次
+// 源码地址：https://github.com/jshttp/on-finished
+const onFinished = require('on-finished')
+
 // 该库主要用来向用户更好的提示将要被弃用的信息，允许提供一个命名空间并返回一个输出弃用信息的函数 deprecate
 // 源码地址：https://github.com/dougwilson/nodejs-depd
 const deprecate = require('depd')('koa')
@@ -77,11 +81,16 @@ module.exports = class Application extends Emitter {
     }
     return handleRequest
   }
+  // TOTO >>>>>>>>>>>>>>> 这块不太懂，为啥搞个 404 状态
   // 处理请求
   handleRequest(ctx, fnMiddleware) {
     // 注意，这个时候，ctx 已经完成了各种挂载
     const res = ctx.res
-    
+    res.statusCode = 404
+    const onerror = err => ctx.onerror(err)
+    const handleResponse = () => respond(ctx)
+    onFinished(res, onerror)
+    return fnMiddleware(ctx).then(handleResponse).catch(onerror)
   }
   // 创建 koa 独特的上下文
   createContent (req, res) {
@@ -139,4 +148,15 @@ module.exports = class Application extends Emitter {
     // 打印错误
     console.error(`\n${msg.replace(/^/gm, '  ')}\n`)
   }
+}
+// 响应处理函数
+function respond (ctx) {
+  // 如果 ctx.respond 为 false，直接返回
+  if (false === ctx.respond) return
+  // 如果 ctx 是不可写的，直接返回
+  if (!ctx.writable) return
+  const res = ctx.res
+  let body = ctx.body
+  const code = ctx.status
+  // TODO >>>>>>>>
 }
