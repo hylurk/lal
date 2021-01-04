@@ -135,5 +135,13 @@ module.exports = {
     url.path = null
     // 重新设置 url 的值
     this.url = stringify(url)
+  },
+  get search () {
+    // 如果 querystring 都不存在，那肯定不存在 search，直接返回空字符串
+    if (!this.querystring) return ''
+    return `?${this.querystring}`
+  },
+  set search (str) {
+    this.querystring = str
   }
 }
