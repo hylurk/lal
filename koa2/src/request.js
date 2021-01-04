@@ -113,10 +113,27 @@ module.exports = {
   },
   // 获取 query
   get query () {
-    //
+    const str = this.querystring
+    const c = this._querycache = this._querycache || {}
+    return c[str] || (c[str] = qs.parse(str))
   },
-  // 设置 query
+  // 设置 query，其实复用了设置 querystring 的方法
   set query (obj) {
-    //
+    this.querystring = qs.stringify(obj)
+  },
+  get querystring () {
+    // 如果没有 req，直接返回空字符串
+    if (!this.req) return ''
+    // 有可能会有 query 不存在的情况
+    return parse(this.req).query || ''
+  },
+  set querystring (str) {
+    const url = parse(this.req)
+    // 如果设置的值与当前的值相同，则不作任何操作
+    if (url.search === `?${str}`) return
+    url.search = str
+    url.path = null
+    // 重新设置 url 的值
+    this.url = stringify(url)
   }
 }
