@@ -143,5 +143,29 @@ module.exports = {
   },
   set search (str) {
     this.querystring = str
+  },
+  // 获取 url，返回的是一个对象
+  get URL () {
+    // TODO >>>>>>>  这地方做了个缓存，为啥呢？我还没弄懂
+    if (!this.memoizedURL) {
+      const originalUrl = this.originalUrl || ''
+      try {
+        this.memoizedURL = new URL(`${this.origin}${originalUrl}`)
+      } catch (err) {
+        this.memoizedURL = Object.create(null)
+      }
+    }
+    return this.memoizedURL
+  },
+  // 判断是否是刷新
+  get fresh () {
+    const method = this.method
+    const s = this.ctx.status
+    // 如果不是 get 请求，也不是 head 请求，则一定不是刷新
+    if ('GET' !== method && 'HEAD' !== method) return false
+    // 如果是 2xx 的请求，或者是 304，则一定是刷新
+    if ((s >= 200 && s < 300) || 304 === s) {
+      return 
+    }
   }
 }
