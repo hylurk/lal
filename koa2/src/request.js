@@ -16,6 +16,10 @@ const stringify = require('url').format
 // 如果不了解，可查看：http://nodejs.cn/api/querystring.html
 const qs = require('querystring')
 
+// 该库主要用来判断浏览器的缓存是否失效，是否需要重新请求最新的内容
+// 源码地址：https://github.com/jshttp/fresh
+const fresh = require('fresh')
+
 // 本质导出的就是一个对象
 module.exports = {
   // 定义 header 和 headers 的属性访问器和设置器
@@ -157,7 +161,7 @@ module.exports = {
     }
     return this.memoizedURL
   },
-  // 判断是否是刷新
+  // 判断是否是新鲜的，也就是说内容是不是最新的
   get fresh () {
     const method = this.method
     const s = this.ctx.status
@@ -165,7 +169,18 @@ module.exports = {
     if ('GET' !== method && 'HEAD' !== method) return false
     // 如果是 2xx 的请求，或者是 304，则一定是刷新
     if ((s >= 200 && s < 300) || 304 === s) {
-      return 
+      // 使用 fresh 库，该库 fresh 方法接受两个参数：reqHeaders 和 resHeaders，返回 Boolean 类型
+      return fresh(this.header, this.response.header)
     }
+    return false
+  },
+  // 获取内容是不是不新鲜的，也就是是缓存的东西
+  get stale () {
+    return !this.fresh
+  },
+  // TODO >>>>>>>>> 幂等的？？？不懂
+  get idempotent () {
+    const methods = ['GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']
+    return !!~methods.indexOf(this.method)
   }
 }
