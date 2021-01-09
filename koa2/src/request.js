@@ -20,6 +20,10 @@ const qs = require('querystring')
 // 源码地址：https://github.com/jshttp/fresh
 const fresh = require('fresh')
 
+// 该库主要用来创建和解析 http 请求中的 headers 里面的 content-type 字段
+// 源码地址：https://github.com/jshttp/content-type
+const contentType = require('content-type')
+
 // 本质导出的就是一个对象
 module.exports = {
   // 定义 header 和 headers 的属性访问器和设置器
@@ -182,5 +186,14 @@ module.exports = {
   get idempotent () {
     const methods = ['GET', 'HEAD', 'PUT', 'DELETE', 'OPTIONS', 'TRACE']
     return !!~methods.indexOf(this.method)
+  },
+  // 获取请求 headers 中的 charset 字段信息
+  get charset () {
+    try {
+      const { parameters } = contentType.parse(this.req)
+      return parameters.charset || ''
+    } catch (err) {
+      return ''
+    }
   }
 }
